@@ -28,7 +28,7 @@ export function LoginForm() {
         <label htmlFor="username">Email</label>
       </div>
       <div>
-        <input name="email" id="email" autoComplete="off" />
+        <input name="email" id="email" />
       </div>
       <div>
         <label htmlFor="password">Password</label>
