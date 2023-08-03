@@ -2,7 +2,7 @@
 import {
   Adapter,
   KeySchema,
-  LuciaError,
+  LuciaErrorConstructor,
   SessionSchema,
   UserSchema,
   lucia,
@@ -13,29 +13,25 @@ type SessionId = string;
 type UserId = string;
 type KeyId = string;
 
-async function getSession(db: DatabaseReader, sessionId: string) {
-  return await db
-    .query("sessions")
-    .withIndex("byId", (q) => q.eq("id", sessionId))
-    .first();
-}
-
-async function getUser(db: DatabaseReader, userId: string) {
-  return await db
-    .query("users")
-    .withIndex("byId", (q) => q.eq("id", userId))
-    .first();
-}
-
-async function getKey(db: DatabaseReader, keyId: string) {
-  return await db
-    .query("auth_keys")
-    .withIndex("byId", (q) => q.eq("id", keyId))
-    .first();
+export function getAuth(db: DatabaseReader) {
+  return lucia({
+    // We cheat to allow queries to use `getAuth`
+    adapter: convexAdapter(db as DatabaseWriter),
+    // TODO: Set the LUCIA_ENVIRONMENT variable to "PROD"
+    // on your prod deployment's dashboard
+    env: (process.env.LUCIA_ENVIRONMENT as "PROD" | undefined) ?? "DEV",
+    getUserAttributes(user: UserSchema) {
+      return {
+        _id: user._id,
+        _creationTime: user._creationTime,
+        email: user.email,
+      };
+    },
+  });
 }
 
 const convexAdapter = (db: DatabaseWriter) => {
-  return (luciaError: typeof LuciaError): Adapter => ({
+  return (LuciaError: LuciaErrorConstructor): Adapter => ({
     async getSessionAndUser(
       sessionId: string
     ): Promise<[SessionSchema, UserSchema] | [null, null]> {
@@ -107,13 +103,21 @@ const convexAdapter = (db: DatabaseWriter) => {
       return await getUser(db, userId);
     },
     async setKey(key: KeySchema): Promise<void> {
+      const existingKey = await this.getKey(key.id);
+      if (existingKey !== null) {
+        throw new LuciaError("AUTH_DUPLICATE_KEY_ID");
+      }
+      const user = await this.getUser(key.user_id);
+      if (user === null) {
+        throw new LuciaError("AUTH_INVALID_USER_ID");
+      }
       await db.insert("auth_keys", key);
     },
     async setUser(user: UserSchema, key: KeySchema | null): Promise<void> {
       const { _id, _creationTime, ...data } = user;
       await db.insert("users", data);
       if (key !== null) {
-        await db.insert("auth_keys", key);
+        this.setKey(key);
       }
     },
     async updateKey(
@@ -122,7 +126,7 @@ const convexAdapter = (db: DatabaseWriter) => {
     ): Promise<void> {
       const key = await getKey(db, keyId);
       if (key === null) {
-        throw new luciaError("AUTH_INVALID_KEY_ID");
+        throw new LuciaError("AUTH_INVALID_KEY_ID");
       }
       await db.patch(key._id, partialKey);
     },
@@ -132,7 +136,7 @@ const convexAdapter = (db: DatabaseWriter) => {
     ): Promise<void> {
       const user = await getUser(db, userId);
       if (user === null) {
-        throw new luciaError("AUTH_INVALID_USER_ID");
+        throw new LuciaError("AUTH_INVALID_USER_ID");
       }
       await db.patch(user._id, partialUser);
     },
@@ -142,26 +146,32 @@ const convexAdapter = (db: DatabaseWriter) => {
     ): Promise<void> {
       const session = await getSession(db, sessionId);
       if (session === null) {
-        throw new luciaError("AUTH_INVALID_SESSION_ID");
+        throw new LuciaError("AUTH_INVALID_SESSION_ID");
       }
       await db.patch(session._id, partialSession);
     },
   });
 };
 
-export function getAuth(db: DatabaseReader) {
-  return lucia({
-    // We cheat to allow queries to use `getAuth`
-    adapter: convexAdapter(db as DatabaseWriter),
-    env: "DEV", // "PROD" if in prod
-    getUserAttributes(user: UserSchema) {
-      return {
-        _id: user._id,
-        _creationTime: user._creationTime,
-        email: user.email,
-      };
-    },
-  });
+async function getSession(db: DatabaseReader, sessionId: string) {
+  return await db
+    .query("sessions")
+    .withIndex("byId", (q) => q.eq("id", sessionId))
+    .first();
+}
+
+async function getUser(db: DatabaseReader, userId: string) {
+  return await db
+    .query("users")
+    .withIndex("byId", (q) => q.eq("id", userId))
+    .first();
+}
+
+async function getKey(db: DatabaseReader, keyId: string) {
+  return await db
+    .query("auth_keys")
+    .withIndex("byId", (q) => q.eq("id", keyId))
+    .first();
 }
 
 export type Auth = ReturnType<typeof getAuth>;

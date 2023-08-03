@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/node": "^20.4.6",
     "convex": "^1.0.2",
     "crypto-js": "^4.1.1",
     "lucia": "^2.0.0",

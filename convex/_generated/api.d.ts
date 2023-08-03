@@ -14,10 +14,11 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
-import type * as auth from "../auth";
 import type * as crons from "../crons";
-import type * as data from "../data";
+import type * as http from "../http";
 import type * as lucia from "../lucia";
+import type * as users from "../users";
+import type * as withAuth from "../withAuth";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -28,10 +29,11 @@ import type * as lucia from "../lucia";
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  auth: typeof auth;
   crons: typeof crons;
-  data: typeof data;
+  http: typeof http;
   lucia: typeof lucia;
+  users: typeof users;
+  withAuth: typeof withAuth;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
