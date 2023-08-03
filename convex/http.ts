@@ -30,7 +30,7 @@ http.route({
 // Define additional routes
 http.route({
   path: "/signUp",
-  method: "GET",
+  method: "POST",
   handler: httpAction(async (ctx, request) => {
     const data = await request.formData();
     validateAuthRequest(request);
