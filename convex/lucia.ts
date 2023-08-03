@@ -7,80 +7,34 @@ import {
   UserSchema,
   lucia,
 } from "lucia";
-import {
-  DatabaseReader as GenericDatabaseReader,
-  DatabaseWriter as GenericDatabaseWriter,
-  GenericFieldPaths,
-  GenericTableSearchIndexes,
-} from "convex/server";
-import { GenericId } from "convex/values";
 import { DatabaseReader, DatabaseWriter } from "./_generated/server";
 
 type SessionId = string;
 type UserId = string;
 type KeyId = string;
 
-async function getSession(
-  db: GenericDatabaseReader<ExpectedDataModel>,
-  sessionId: string
-) {
+async function getSession(db: DatabaseReader, sessionId: string) {
   return await db
     .query("sessions")
     .withIndex("byId", (q) => q.eq("id", sessionId))
     .first();
 }
 
-async function getUser(
-  db: GenericDatabaseReader<ExpectedDataModel>,
-  userId: string
-) {
+async function getUser(db: DatabaseReader, userId: string) {
   return await db
     .query("users")
     .withIndex("byId", (q) => q.eq("id", userId))
     .first();
 }
 
-async function getKey(
-  db: GenericDatabaseReader<ExpectedDataModel>,
-  keyId: string
-) {
+async function getKey(db: DatabaseReader, keyId: string) {
   return await db
     .query("auth_keys")
     .withIndex("byId", (q) => q.eq("id", keyId))
     .first();
 }
 
-type ExpectedDataModel = {
-  users: {
-    document: UserSchema;
-    fieldPaths: GenericFieldPaths;
-    indexes: {
-      byId: ["id"];
-      byUserId: ["user_id"];
-    };
-    searchIndexes: GenericTableSearchIndexes;
-  };
-  sessions: {
-    document: SessionSchema;
-    fieldPaths: GenericFieldPaths;
-    indexes: {
-      byId: ["id"];
-      byUserId: ["user_id"];
-    };
-    searchIndexes: GenericTableSearchIndexes;
-  };
-  auth_keys: {
-    document: KeySchema & { _id: GenericId<"auth_keys"> };
-    fieldPaths: GenericFieldPaths;
-    indexes: {
-      byId: ["id"];
-      byUserId: ["user_id"];
-    };
-    searchIndexes: GenericTableSearchIndexes;
-  };
-};
-
-const convexAdapter = (db: GenericDatabaseWriter<ExpectedDataModel>) => {
+const convexAdapter = (db: DatabaseWriter) => {
   return (luciaError: typeof LuciaError): Adapter => ({
     async getSessionAndUser(
       sessionId: string
