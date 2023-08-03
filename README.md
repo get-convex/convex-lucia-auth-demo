@@ -11,7 +11,7 @@ Features:
 - Session is preserved in `localStorage`
 - Passwords are securely hashed
 
-This integration works! You can see a production deployment at this live site: https://xixixao.github.io/paymorebeseen/.
+This integration works! You can see a production deployment at this live site: https://get-convex.github.io/convex-lucia-auth-demo/.
 
 ## Setting up
 
@@ -31,8 +31,8 @@ Follow these steps to deploy this repo to production:
 1. Configure `VITE_CONVEX_URL` either in your hosting provider or in a `.env.production` file
 2. In your production deployment's settings page configure these variables:
 
-   LUCIA_ENVIRONMENT=PROD
-   HOSTNAME=<where the app is hosted, such as "foo.github.io" or "mydomain.com">
+   - `LUCIA_ENVIRONMENT`=`PROD`
+   - `HOSTNAME`=where the app is hosted, such as `foo.github.io` or `mydomain.com`
 
 # What is Convex?
 
