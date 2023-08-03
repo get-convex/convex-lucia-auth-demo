@@ -22,22 +22,17 @@ npm install
 npm run dev
 ```
 
-This will guide you through making a Convex project.
+This will guide you through making a Convex project, and then open the web browser with the app running.
 
-To test the payments flow, follow these steps:
+## Deploying to production
 
-1. Sign up for Stripe for free at https://stripe.com/
-2. [Install the stripe CLI](https://stripe.com/docs/stripe-cli)
-3. Run
+Follow these steps to deploy this repo to production:
 
-```
-stripe listen --forward-to localhost:5173/stripe
-```
+1. Configure `VITE_CONVEX_URL` either in your hosting provider or in a `.env.production` file
+2. In your production deployment's settings page configure these variables:
 
-4. Copy the "Your webhook signing secret" from the output of the `listen` command, and set it as `STRIPE_WEBHOOKS_SECRET` environment variable on your Convex dashboard
-5. Copy your test secret API key from the code example on https://stripe.com/docs/checkout/quickstart and set it as `STRIPE_KEY` environment variable on your Convex dashboard
-
-You can then use the test credit card details to go through the payment flow, see https://stripe.com/docs/checkout/quickstart#testing
+   LUCIA_ENVIRONMENT=PROD
+   HOSTNAME=<where the app is hosted, such as "foo.github.io" or "mydomain.com">
 
 # What is Convex?
 
