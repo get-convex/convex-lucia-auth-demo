@@ -117,7 +117,7 @@ const convexAdapter = (db: DatabaseWriter) => {
       const { _id, _creationTime, ...data } = user;
       await db.insert("users", data);
       if (key !== null) {
-        this.setKey(key);
+        await this.setKey(key);
       }
     },
     async updateKey(
