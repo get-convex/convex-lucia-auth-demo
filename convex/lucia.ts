@@ -1,9 +1,12 @@
 // lucia.ts
 import {
   Adapter,
+  Key,
   KeySchema,
   LuciaErrorConstructor,
+  Session,
   SessionSchema,
+  User,
   UserSchema,
   lucia,
 } from "lucia";
@@ -13,10 +16,27 @@ type SessionId = string;
 type UserId = string;
 type KeyId = string;
 
-export function getAuth(db: DatabaseReader) {
+// This is the read-only portion of Lucia's `Auth` API
+type AuthReader = {
+  getUser: (userId: string) => Promise<User>;
+  useKey: (
+    providerId: string,
+    providerUserId: string,
+    password: string | null
+  ) => Promise<Key>;
+  getSession: (sessionId: string) => Promise<Session>;
+  getAllUserSessions: (userId: string) => Promise<Session[]>;
+  readSessionCookie: (cookieHeader: string | null | undefined) => string | null;
+  readBearerToken: (
+    authorizationHeader: string | null | undefined
+  ) => string | null;
+  getAllUserKeys: (userId: string) => Promise<Key[]>;
+};
+
+export function getAuthWriter(db: DatabaseWriter) {
   return lucia({
     // We cheat to allow queries to use `getAuth`
-    adapter: convexAdapter(db as DatabaseWriter),
+    adapter: convexAdapter(db),
     // TODO: Set the LUCIA_ENVIRONMENT variable to "PROD"
     // on your prod deployment's dashboard
     env: (process.env.LUCIA_ENVIRONMENT as "PROD" | undefined) ?? "DEV",
@@ -29,6 +49,14 @@ export function getAuth(db: DatabaseReader) {
     },
   });
 }
+
+export function getAuthReader(db: DatabaseReader): AuthReader {
+  // We make sure callers can only use readonly adapter methods
+  // via the return type
+  return getAuthWriter(db as DatabaseWriter);
+}
+
+export type AuthWriter = ReturnType<typeof getAuthWriter>;
 
 const convexAdapter = (db: DatabaseWriter) => {
   return (LuciaError: LuciaErrorConstructor): Adapter => ({
@@ -173,5 +201,3 @@ async function getKey(db: DatabaseReader, keyId: string) {
     .withIndex("byId", (q) => q.eq("id", keyId))
     .first();
 }
-
-export type Auth = ReturnType<typeof getAuth>;

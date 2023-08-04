@@ -8,7 +8,7 @@ import {
   QueryCtx,
   MutationCtx,
 } from "./_generated/server";
-import { Auth, getAuth } from "./lucia";
+import { AuthWriter, getAuthWriter, AuthReader, getAuthReader } from "./lucia";
 
 export function query<ArgsValidator extends PropertyValidators, Output>(
   args: ArgsValidator,
@@ -20,7 +20,7 @@ export function query<ArgsValidator extends PropertyValidators, Output>(
   return convexQuery({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
     handler: async (ctx, args) => {
-      const auth = getAuth(ctx.db);
+      const auth = getAuthReader(ctx.db);
       const session = await getValidSession(auth, (args as any).sessionId);
       return handler({ ...ctx, session }, args as any);
     },
@@ -37,7 +37,7 @@ export function mutation<ArgsValidator extends PropertyValidators, Output>(
   return convexMutation({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
     handler: async (ctx, args) => {
-      const auth = getAuth(ctx.db);
+      const auth = getAuthWriter(ctx.db);
       const session = await getValidSession(auth, (args as any).sessionId);
       return handler({ ...ctx, session, auth }, args as any);
     },
