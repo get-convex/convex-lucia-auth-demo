@@ -34,6 +34,14 @@ Follow these steps to deploy this repo to production:
    - `LUCIA_ENVIRONMENT`=`PROD`
    - `HOSTNAME`=where the app is hosted, such as `foo.github.io` or `mydomain.com`
 
+## Note on CSRF protection
+
+This demo uses `localStorage` for storing the secret `sessionId`. This means that sessions are only preserved on pages served on the same subdomain, such as `foo.example.com` or `username.github.io`. This prevents CSRF attacks.
+
+This does though invite an [XSS attack](https://en.wikipedia.org/wiki/Cross-site_scripting). Make sure your app is not susceptable to XSS.
+
+Convex currently doesn't support accessing cookies in queries and mutations, so cookie-based authentication can only be used in Convex HTTP actions (not demonstrated in this demo).
+
 # What is Convex?
 
 [Convex](https://convex.dev) is a hosted backend platform with a

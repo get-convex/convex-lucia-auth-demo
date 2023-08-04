@@ -1,20 +1,22 @@
 import { useState } from "react";
 import { useSetSessionId } from "./SessionProvider";
-
-const API_URL = import.meta.env.VITE_CONVEX_URL.replace(/.cloud$/, ".site");
+import { useMutation } from "./withAuth";
+import { api } from "../convex/_generated/api";
 
 export function LoginForm() {
   const setSessionId = useSetSessionId();
   const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
+  const signIn = useMutation(api.users.signIn);
+  const signUp = useMutation(api.users.signUp);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const data = new FormData(event.currentTarget);
     try {
-      const response = await fetch(
-        `${API_URL}/${flow === "signIn" ? "signIn" : "signUp"}`,
-        { body: new FormData(event.currentTarget), method: "POST" }
-      );
-      const sessionId = await response.text();
+      const sessionId = await (flow === "signIn" ? signIn : signUp)({
+        email: (data.get("email") as string | null) ?? "",
+        password: (data.get("password") as string | null) ?? "",
+      });
       setSessionId(sessionId);
     } catch {
       alert(

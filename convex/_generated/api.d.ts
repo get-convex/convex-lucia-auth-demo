@@ -15,7 +15,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as crons from "../crons";
-import type * as http from "../http";
 import type * as lucia from "../lucia";
 import type * as users from "../users";
 import type * as withAuth from "../withAuth";
@@ -30,7 +29,6 @@ import type * as withAuth from "../withAuth";
  */
 declare const fullApi: ApiFromModules<{
   crons: typeof crons;
-  http: typeof http;
   lucia: typeof lucia;
   users: typeof users;
   withAuth: typeof withAuth;
