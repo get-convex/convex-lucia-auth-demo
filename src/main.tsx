@@ -12,6 +12,19 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <SessionProvider>
       <ConvexProvider client={convex}>
         <App />
+        <div>
+          Built on{" "}
+          <a href="https://convex.dev" target="_blank">
+            Convex
+          </a>
+          , source on{" "}
+          <a
+            href="https://github.com/get-convex/convex-lucia-auth-demo"
+            target="_blank"
+          >
+            Github
+          </a>
+        </div>
       </ConvexProvider>
     </SessionProvider>
   </React.StrictMode>
