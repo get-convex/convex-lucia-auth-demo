@@ -13,10 +13,10 @@ type SessionId = string;
 type UserId = string;
 type KeyId = string;
 
-export function getAuth(db: DatabaseReader) {
+export function getAuth(db: DatabaseWriter) {
   return lucia({
     // We cheat to allow queries to use `getAuth`
-    adapter: convexAdapter(db as DatabaseWriter),
+    adapter: convexAdapter(db),
     // TODO: Set the LUCIA_ENVIRONMENT variable to "PROD"
     // on your prod deployment's dashboard
     env: (process.env.LUCIA_ENVIRONMENT as "PROD" | undefined) ?? "DEV",

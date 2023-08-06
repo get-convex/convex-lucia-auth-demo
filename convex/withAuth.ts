@@ -7,6 +7,7 @@ import {
   internalMutation as convexInternalMutation,
   QueryCtx,
   MutationCtx,
+  DatabaseWriter,
 } from "./_generated/server";
 import { Auth, getAuth } from "./lucia";
 
@@ -19,10 +20,25 @@ export function query<ArgsValidator extends PropertyValidators, Output>(
 ) {
   return convexQuery({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
-    handler: async (ctx, args) => {
-      const auth = getAuth(ctx.db);
-      const session = await getValidSession(auth, (args as any).sessionId);
-      return handler({ ...ctx, session }, args as any);
+    handler: async (ctx, args: any) => {
+      const session = await getValidExistingSession(ctx, args.sessionId);
+      return handler({ ...ctx, session }, args);
+    },
+  });
+}
+
+export function internalQuery<ArgsValidator extends PropertyValidators, Output>(
+  args: ArgsValidator,
+  handler: (
+    ctx: Omit<QueryCtx, "auth"> & { session: Session | null },
+    args: ObjectType<ArgsValidator>
+  ) => Output
+) {
+  return convexInternalQuery({
+    args: { ...args, sessionId: v.union(v.null(), v.string()) },
+    handler: async (ctx, args: any) => {
+      const session = await getValidExistingSession(ctx, args.sessionId);
+      return handler({ ...ctx, session }, args);
     },
   });
 }
@@ -36,27 +52,10 @@ export function mutation<ArgsValidator extends PropertyValidators, Output>(
 ) {
   return convexMutation({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
-    handler: async (ctx, args) => {
+    handler: async (ctx, args: any) => {
       const auth = getAuth(ctx.db);
-      const session = await getValidSession(auth, (args as any).sessionId);
-      return handler({ ...ctx, session, auth }, args as any);
-    },
-  });
-}
-
-export function internalQuery<ArgsValidator extends PropertyValidators, Output>(
-  args: ArgsValidator,
-  handler: (
-    ctx: Omit<QueryCtx, "auth"> & { auth: Auth; session: Session | null },
-    args: ObjectType<ArgsValidator>
-  ) => Output
-) {
-  return convexInternalQuery({
-    args: { ...args, sessionId: v.union(v.null(), v.string()) },
-    handler: async (ctx, args) => {
-      const auth = getAuth(ctx.db);
-      const session = await getValidSession(auth, (args as any).sessionId);
-      return handler({ ...ctx, session, auth }, args as any);
+      const session = await getValidSessionAndRenew(auth, args.sessionId);
+      return handler({ ...ctx, session, auth }, args);
     },
   });
 }
@@ -73,24 +72,41 @@ export function internalMutation<
 ) {
   return convexInternalMutation({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
-    handler: async (ctx, args) => {
+    handler: async (ctx, args: any) => {
       const auth = getAuth(ctx.db);
-      const session = await getValidSession(auth, (args as any).sessionId);
-      return handler({ ...ctx, session, auth }, args as any);
+      const session = await getValidSessionAndRenew(auth, args.sessionId);
+      return handler({ ...ctx, session, auth }, args);
     },
   });
 }
 
-async function getValidSession(auth: Auth, sessionId: string | null) {
+async function getValidExistingSession(
+  ctx: QueryCtx,
+  sessionId: string | null
+) {
+  if (sessionId === null) {
+    return null;
+  }
+  // The cast is OK because we will only expose the existing session
+  const auth = getAuth(ctx.db as DatabaseWriter);
+  try {
+    const session = (await auth.getSession(sessionId)) as Session | null;
+    if (session === null || session.state === "idle") {
+      return null;
+    }
+    return session;
+  } catch (error) {
+    // Invalid session ID
+    return null;
+  }
+}
+
+async function getValidSessionAndRenew(auth: Auth, sessionId: string | null) {
   if (sessionId === null) {
     return null;
   }
   try {
-    const session = (await auth.getSession(sessionId)) as Session | null;
-    if (session === null) {
-      return null;
-    }
-    return session.state === "idle" ? null : session;
+    return await auth.validateSession(sessionId);
   } catch (error) {
     // Invalid session ID
     return null;

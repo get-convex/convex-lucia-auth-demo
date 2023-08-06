@@ -9,7 +9,7 @@ function App() {
 
   return (
     <main>
-      <h1>Convex Lucia Auth Example</h1>
+      <h1>Convex + Lucia Auth Example</h1>
       {user === undefined ? (
         <div>Loading...</div>
       ) : user == null ? (

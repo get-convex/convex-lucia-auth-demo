@@ -26,37 +26,27 @@ export function LoginForm() {
   };
   return (
     <form onSubmit={handleSubmit}>
-      <div>
-        <label htmlFor="username">Email</label>
-      </div>
-      <div>
-        <input name="email" id="email" />
-      </div>
-      <div>
-        <label htmlFor="password">Password</label>
-      </div>
-      <div>
-        <input type="password" name="password" id="password" />
-      </div>
+      <label htmlFor="username">Email</label>
+      <input name="email" id="email" />
+      <label htmlFor="password">Password</label>
+      <input type="password" name="password" id="password" />
       {flow === "signIn" ? (
         <input type="submit" value="Sign in" />
       ) : (
         <input type="submit" value="Sign up" />
       )}
-      <div>
-        <a
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            setFlow(flow === "signIn" ? "signUp" : "signIn");
-          }}
-        >
-          {flow === "signIn" ? (
-            <>Don't have an account? Sign up</>
-          ) : (
-            <>Already have an account? Sign in</>
-          )}
-        </a>
-      </div>
+      <a
+        style={{ cursor: "pointer" }}
+        onClick={() => {
+          setFlow(flow === "signIn" ? "signUp" : "signIn");
+        }}
+      >
+        {flow === "signIn" ? (
+          <>Don't have an account? Sign up</>
+        ) : (
+          <>Already have an account? Sign in</>
+        )}
+      </a>
     </form>
   );
 }
