@@ -13,6 +13,8 @@ Features:
 
 This integration works! You can see a production deployment at this live site: https://get-convex.github.io/convex-lucia-auth-demo/.
 
+Read a deep dive into this codebase at [Custom Authentication (with Lucia)](https://stack.convex.dev/convex-with-lucia) on Stack.
+
 ## Setting up
 
 Run:
