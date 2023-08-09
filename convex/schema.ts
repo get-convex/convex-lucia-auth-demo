@@ -24,6 +24,7 @@ function authTables<
       active_expires: v.float64(),
       idle_expires: v.float64(),
     })
+      // `as any` because TypeScript can't infer the table fields correctly
       .index("byId", ["id" as any])
       .index("byUserId", ["user_id" as any]),
     auth_keys: defineTable({
