@@ -1,24 +1,24 @@
 import { ObjectType, PropertyValidators, v } from "convex/values";
 import { Session } from "lucia";
 import {
-  query as convexQuery,
-  mutation as convexMutation,
-  internalQuery as convexInternalQuery,
-  internalMutation as convexInternalMutation,
-  QueryCtx,
-  MutationCtx,
   DatabaseWriter,
+  MutationCtx,
+  QueryCtx,
+  internalMutation,
+  internalQuery,
+  mutation,
+  query,
 } from "./_generated/server";
 import { Auth, getAuth } from "./lucia";
 
-export function query<ArgsValidator extends PropertyValidators, Output>(
+export function queryWithAuth<ArgsValidator extends PropertyValidators, Output>(
   args: ArgsValidator,
   handler: (
     ctx: QueryCtx & { session: Session | null },
     args: ObjectType<ArgsValidator>
   ) => Output
 ) {
-  return convexQuery({
+  return query({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
     handler: async (ctx, args: any) => {
       const session = await getValidExistingSession(ctx, args.sessionId);
@@ -27,14 +27,17 @@ export function query<ArgsValidator extends PropertyValidators, Output>(
   });
 }
 
-export function internalQuery<ArgsValidator extends PropertyValidators, Output>(
+export function internalQueryWithAuth<
+  ArgsValidator extends PropertyValidators,
+  Output
+>(
   args: ArgsValidator,
   handler: (
     ctx: Omit<QueryCtx, "auth"> & { session: Session | null },
     args: ObjectType<ArgsValidator>
   ) => Output
 ) {
-  return convexInternalQuery({
+  return internalQuery({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
     handler: async (ctx, args: any) => {
       const session = await getValidExistingSession(ctx, args.sessionId);
@@ -43,24 +46,7 @@ export function internalQuery<ArgsValidator extends PropertyValidators, Output>(
   });
 }
 
-export function mutation<ArgsValidator extends PropertyValidators, Output>(
-  args: ArgsValidator,
-  handler: (
-    ctx: Omit<MutationCtx, "auth"> & { auth: Auth; session: Session | null },
-    args: ObjectType<ArgsValidator>
-  ) => Output
-) {
-  return convexMutation({
-    args: { ...args, sessionId: v.union(v.null(), v.string()) },
-    handler: async (ctx, args: any) => {
-      const auth = getAuth(ctx.db);
-      const session = await getValidSessionAndRenew(auth, args.sessionId);
-      return handler({ ...ctx, session, auth }, args);
-    },
-  });
-}
-
-export function internalMutation<
+export function mutationWithAuth<
   ArgsValidator extends PropertyValidators,
   Output
 >(
@@ -70,7 +56,27 @@ export function internalMutation<
     args: ObjectType<ArgsValidator>
   ) => Output
 ) {
-  return convexInternalMutation({
+  return mutation({
+    args: { ...args, sessionId: v.union(v.null(), v.string()) },
+    handler: async (ctx, args: any) => {
+      const auth = getAuth(ctx.db);
+      const session = await getValidSessionAndRenew(auth, args.sessionId);
+      return handler({ ...ctx, session, auth }, args);
+    },
+  });
+}
+
+export function internalMutationWithAuth<
+  ArgsValidator extends PropertyValidators,
+  Output
+>(
+  args: ArgsValidator,
+  handler: (
+    ctx: Omit<MutationCtx, "auth"> & { auth: Auth; session: Session | null },
+    args: ObjectType<ArgsValidator>
+  ) => Output
+) {
+  return internalMutation({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
     handler: async (ctx, args: any) => {
       const auth = getAuth(ctx.db);

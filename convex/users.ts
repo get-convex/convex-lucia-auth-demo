@@ -1,12 +1,12 @@
 import { v } from "convex/values";
-import { query, mutation } from "./withAuth";
+import { queryWithAuth, mutationWithAuth } from "./withAuth";
 import { Id } from "./_generated/dataModel";
 
-export const get = query({}, async (ctx) => {
+export const get = queryWithAuth({}, async (ctx) => {
   return ctx.session?.user;
 });
 
-export const signIn = mutation(
+export const signIn = mutationWithAuth(
   {
     email: v.string(),
     password: v.string(),
@@ -25,7 +25,7 @@ export const signIn = mutation(
   }
 );
 
-export const signUp = mutation(
+export const signUp = mutationWithAuth(
   {
     email: v.string(),
     password: v.string(),

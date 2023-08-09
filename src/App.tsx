@@ -2,7 +2,7 @@ import { api } from "../convex/_generated/api";
 import "./App.css";
 import { LoginForm } from "./LoginForm";
 import { LogoutButton } from "./LogoutButton";
-import { useQuery } from "./withAuth";
+import { useQuery } from "./usingSession";
 
 function App() {
   const user = useQuery(api.users.get, {});
