@@ -11,15 +11,24 @@ import {
 } from "./_generated/server";
 import { Auth, getAuth } from "./lucia";
 
-export function queryWithAuth<ArgsValidator extends PropertyValidators, Output>(
-  args: ArgsValidator,
+export function queryWithAuth<
+  ArgsValidator extends PropertyValidators,
+  Output
+>({
+  args,
+  handler,
+}: {
+  args: ArgsValidator;
   handler: (
-    ctx: QueryCtx & { session: Session | null },
+    ctx: Omit<QueryCtx, "auth"> & { session: Session | null },
     args: ObjectType<ArgsValidator>
-  ) => Output
-) {
+  ) => Output;
+}) {
   return query({
-    args: { ...args, sessionId: v.union(v.null(), v.string()) },
+    args: {
+      ...args,
+      sessionId: v.union(v.null(), v.string()),
+    },
     handler: async (ctx, args: any) => {
       const session = await getValidExistingSession(ctx, args.sessionId);
       return handler({ ...ctx, session }, args);
@@ -30,13 +39,16 @@ export function queryWithAuth<ArgsValidator extends PropertyValidators, Output>(
 export function internalQueryWithAuth<
   ArgsValidator extends PropertyValidators,
   Output
->(
-  args: ArgsValidator,
+>({
+  args,
+  handler,
+}: {
+  args: ArgsValidator;
   handler: (
     ctx: Omit<QueryCtx, "auth"> & { session: Session | null },
     args: ObjectType<ArgsValidator>
-  ) => Output
-) {
+  ) => Output;
+}) {
   return internalQuery({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
     handler: async (ctx, args: any) => {
@@ -49,13 +61,16 @@ export function internalQueryWithAuth<
 export function mutationWithAuth<
   ArgsValidator extends PropertyValidators,
   Output
->(
-  args: ArgsValidator,
+>({
+  args,
+  handler,
+}: {
+  args: ArgsValidator;
   handler: (
     ctx: Omit<MutationCtx, "auth"> & { auth: Auth; session: Session | null },
     args: ObjectType<ArgsValidator>
-  ) => Output
-) {
+  ) => Output;
+}) {
   return mutation({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
     handler: async (ctx, args: any) => {
@@ -69,13 +84,16 @@ export function mutationWithAuth<
 export function internalMutationWithAuth<
   ArgsValidator extends PropertyValidators,
   Output
->(
-  args: ArgsValidator,
+>({
+  args,
+  handler,
+}: {
+  args: ArgsValidator;
   handler: (
     ctx: Omit<MutationCtx, "auth"> & { auth: Auth; session: Session | null },
     args: ObjectType<ArgsValidator>
-  ) => Output
-) {
+  ) => Output;
+}) {
   return internalMutation({
     args: { ...args, sessionId: v.union(v.null(), v.string()) },
     handler: async (ctx, args: any) => {

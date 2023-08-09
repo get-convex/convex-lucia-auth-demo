@@ -2,16 +2,19 @@ import { v } from "convex/values";
 import { queryWithAuth, mutationWithAuth } from "./withAuth";
 import { Id } from "./_generated/dataModel";
 
-export const get = queryWithAuth({}, async (ctx) => {
-  return ctx.session?.user;
+export const get = queryWithAuth({
+  args: {},
+  handler: async (ctx) => {
+    return ctx.session?.user;
+  },
 });
 
-export const signIn = mutationWithAuth(
-  {
+export const signIn = mutationWithAuth({
+  args: {
     email: v.string(),
     password: v.string(),
   },
-  async (ctx, { email, password }) => {
+  handler: async (ctx, { email, password }) => {
     const key = await ctx.auth.useKey("password", email, password);
     const session = await ctx.auth.createSession({
       userId: key.userId,
@@ -22,15 +25,15 @@ export const signIn = mutationWithAuth(
       },
     });
     return session.sessionId;
-  }
-);
+  },
+});
 
-export const signUp = mutationWithAuth(
-  {
+export const signUp = mutationWithAuth({
+  args: {
     email: v.string(),
     password: v.string(),
   },
-  async (ctx, { email, password }) => {
+  handler: async (ctx, { email, password }) => {
     const user = await ctx.auth.createUser({
       key: {
         password: password,
@@ -53,5 +56,5 @@ export const signUp = mutationWithAuth(
       },
     });
     return session.sessionId;
-  }
-);
+  },
+});
