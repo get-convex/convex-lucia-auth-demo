@@ -1,8 +1,7 @@
 import {
   useQuery as useConvexQuery,
-  useMutation as useConvexMutation,
+  useMutation as useConvexMutation, ReactMutation,
 } from "convex/react";
-import { ReactMutation } from "convex/react-internal";
 import { FunctionReference } from "convex/server";
 import { useCallback } from "react";
 import { useSessionId } from "./SessionProvider";
